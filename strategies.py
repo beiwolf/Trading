@@ -624,6 +624,253 @@ def breakout(data: dict, params: dict) -> pd.DataFrame:
 
 
 # ═══════════════════════════════════════════════════════════════
+# 9. LOW VOLATILITY ANOMALY (AQR / Robeco / Acadian style)
+# ═══════════════════════════════════════════════════════════════
+
+def low_volatility(data: dict, params: dict) -> pd.DataFrame:
+    """
+    Exploits the low-volatility anomaly: historically, low-vol stocks
+    deliver higher risk-adjusted returns than high-vol stocks.
+
+    1. Every rebalance, rank stocks by trailing realized volatility
+    2. Go long the lowest-vol quintile, short the highest-vol quintile
+    3. Weight inversely by vol within each leg for risk parity
+
+    Documented by Baker, Bradley & Wurgler (2011) and widely traded
+    by AQR, Robeco, Acadian, and MSCI Min-Vol indices.
+    """
+    close = data["close"]
+    returns = data["returns"]
+    vol_window = params.get("volatility_window", 60)
+    rebal_freq = params.get("rebalance_frequency", 21)
+    long_pct = params.get("long_pct", 0.20)
+    short_pct = params.get("short_pct", 0.20)
+
+    weights = pd.DataFrame(0.0, index=close.index, columns=close.columns)
+
+    for i in range(vol_window, len(close), rebal_freq):
+        # Compute realized volatility for each stock
+        window_ret = returns.iloc[max(0, i - vol_window):i]
+        vols = window_ret.std() * np.sqrt(252)
+        vols = vols.dropna()
+        vols = vols[vols > 0]
+
+        if len(vols) < 5:
+            continue
+
+        # Rank by volatility (ascending = lowest vol first)
+        ranked = vols.sort_values()
+        n_long = max(1, int(len(ranked) * long_pct))
+        n_short = max(1, int(len(ranked) * short_pct))
+
+        longs = ranked.index[:n_long].tolist()
+        shorts = ranked.index[-n_short:].tolist()
+
+        # Inverse-vol weighting within each leg
+        long_inv_vol = 1.0 / vols[longs]
+        long_weights = long_inv_vol / long_inv_vol.sum()
+
+        short_inv_vol = 1.0 / vols[shorts]
+        short_weights = short_inv_vol / short_inv_vol.sum()
+
+        # Apply weights for the rebalance period
+        end_idx = min(i + rebal_freq, len(close))
+        for j in range(i, end_idx):
+            for t in longs:
+                if t in weights.columns:
+                    weights.iloc[j, weights.columns.get_loc(t)] = long_weights[t]
+            for t in shorts:
+                if t in weights.columns:
+                    weights.iloc[j, weights.columns.get_loc(t)] = -short_weights[t]
+
+    return weights
+
+
+# ═══════════════════════════════════════════════════════════════
+# 10. OVERNIGHT DRIFT (Overnight Return Anomaly)
+# ═══════════════════════════════════════════════════════════════
+
+def overnight_drift(data: dict, params: dict) -> pd.DataFrame:
+    """
+    Exploits the overnight return anomaly: stocks earn most of their
+    long-run returns between close and next-day open.
+
+    1. Compute rolling overnight returns (open/prev_close - 1)
+    2. Rank stocks by average overnight return over lookback
+    3. Go long stocks with consistently positive overnight drift
+    4. Short stocks with consistently negative overnight drift
+
+    Documented by Cliff, Cooper, & Gulen (2008), Kelly & Clark (2011).
+    Used as a signal by many systematic funds including Two Sigma.
+    """
+    close = data["close"]
+    opn = data["open"]
+    lookback = params.get("lookback", 40)
+    rebal_freq = params.get("rebalance_frequency", 5)
+    long_pct = params.get("long_pct", 0.30)
+    short_pct = params.get("short_pct", 0.30)
+    min_avg_drift = params.get("min_avg_drift", 0.0)
+
+    # Overnight return: open_t / close_{t-1} - 1
+    overnight_ret = opn / close.shift(1) - 1
+
+    weights = pd.DataFrame(0.0, index=close.index, columns=close.columns)
+
+    for i in range(lookback, len(close), rebal_freq):
+        # Average overnight return over lookback window
+        window = overnight_ret.iloc[max(0, i - lookback):i]
+        avg_overnight = window.mean()
+        avg_overnight = avg_overnight.dropna()
+
+        if len(avg_overnight) < 5:
+            continue
+
+        # Also compute overnight return consistency (hit rate)
+        hit_rate = (window > 0).mean()
+
+        # Composite score: average drift * consistency
+        score = avg_overnight * hit_rate
+        score = score.dropna().sort_values(ascending=False)
+
+        if len(score) < 5:
+            continue
+
+        n_long = max(1, int(len(score) * long_pct))
+        n_short = max(1, int(len(score) * short_pct))
+
+        longs = [t for t in score.index[:n_long] if score[t] > min_avg_drift]
+        shorts = [t for t in score.index[-n_short:] if score[t] < -min_avg_drift]
+
+        # Equal-weight within each leg
+        end_idx = min(i + rebal_freq, len(close))
+        if longs:
+            w_long = 1.0 / len(longs)
+            for j in range(i, end_idx):
+                for t in longs:
+                    if t in weights.columns:
+                        weights.iloc[j, weights.columns.get_loc(t)] = w_long
+
+        if shorts:
+            w_short = 1.0 / len(shorts)
+            for j in range(i, end_idx):
+                for t in shorts:
+                    if t in weights.columns:
+                        weights.iloc[j, weights.columns.get_loc(t)] = -w_short
+
+    # Normalize
+    abs_sum = weights.abs().sum(axis=1).replace(0, 1)
+    weights = weights.div(abs_sum.clip(lower=1), axis=0)
+    return weights
+
+
+# ═══════════════════════════════════════════════════════════════
+# 11. ADAPTIVE MOMENTUM (Man AHL / Winton / Campbell style)
+# ═══════════════════════════════════════════════════════════════
+
+def adaptive_momentum(data: dict, params: dict) -> pd.DataFrame:
+    """
+    Multi-horizon adaptive momentum: combines short, medium, and long
+    lookback signals, weighting each by its recent performance.
+
+    1. Compute momentum signal at 3 horizons (21d, 63d, 126d)
+    2. Track each horizon's predictive accuracy over trailing window
+    3. Weight signals by inverse forecast error (adaptive blending)
+    4. Vol-target each position for risk parity
+
+    Inspired by Man AHL's trend-following research, Hurst, Ooi & Pedersen
+    (2017) "A Century of Evidence on Trend-Following Investing".
+    Also used by Winton, Campbell & Co, and Aspect Capital.
+    """
+    close = data["close"]
+    returns = data["returns"]
+    horizons = params.get("horizons", [21, 63, 126])
+    eval_window = params.get("eval_window", 63)
+    vol_target = params.get("vol_target", 0.15)
+    rebal_freq = params.get("rebalance_frequency", 5)
+
+    # Pre-compute momentum signals for each horizon
+    mom_signals = {}
+    for h in horizons:
+        # Momentum = return over h days (skip most recent day for no look-ahead)
+        mom = close / close.shift(h) - 1
+        mom_signals[h] = mom
+
+    weights = pd.DataFrame(0.0, index=close.index, columns=close.columns)
+    max_lookback = max(horizons) + eval_window
+
+    for i in range(max_lookback, len(close), rebal_freq):
+        # Evaluate each horizon's recent performance
+        horizon_weights = {}
+        for h in horizons:
+            # How well did this horizon's signal predict forward returns?
+            # Look at correlation between signal and subsequent 5-day returns
+            eval_start = max(0, i - eval_window)
+            signal_slice = mom_signals[h].iloc[eval_start:i - 5]
+            fwd_ret = returns.iloc[eval_start + 5:i].rolling(5).sum()
+
+            # Align
+            common_idx = signal_slice.index.intersection(fwd_ret.index)
+            if len(common_idx) < 10:
+                horizon_weights[h] = 1.0 / len(horizons)
+                continue
+
+            # Average cross-sectional correlation
+            correlations = []
+            for col in close.columns:
+                if col in signal_slice.columns and col in fwd_ret.columns:
+                    s = signal_slice.loc[common_idx, col].dropna()
+                    f = fwd_ret.loc[common_idx, col].dropna()
+                    ci = s.index.intersection(f.index)
+                    if len(ci) > 10:
+                        corr = s.loc[ci].corr(f.loc[ci])
+                        if not np.isnan(corr):
+                            correlations.append(max(corr, 0))
+
+            avg_corr = np.mean(correlations) if correlations else 0
+            horizon_weights[h] = max(avg_corr, 0.01)
+
+        # Normalize horizon weights
+        total_hw = sum(horizon_weights.values())
+        if total_hw > 0:
+            horizon_weights = {h: w / total_hw for h, w in horizon_weights.items()}
+
+        # Blend signals across horizons
+        blended = pd.Series(0.0, index=close.columns)
+        for h, hw in horizon_weights.items():
+            sig = mom_signals[h].iloc[i]
+            sig = sig.fillna(0)
+            # Normalize signal: z-score across stocks
+            mu = sig.mean()
+            sigma = sig.std()
+            if sigma > 0:
+                z_sig = (sig - mu) / sigma
+            else:
+                z_sig = sig * 0
+            blended += hw * z_sig
+
+        # Convert to direction: long positive momentum, short negative
+        raw_weights = blended.clip(-2, 2) / 2  # Scale to [-1, 1]
+
+        # Vol-target each position
+        daily_vol = returns.iloc[max(0, i - 20):i].std()
+        annual_vol = daily_vol * np.sqrt(252)
+        vol_scalar = (vol_target / annual_vol.replace(0, np.nan)).clip(0.1, 3.0).fillna(1.0)
+        scaled_weights = raw_weights * vol_scalar
+
+        # Normalize to max gross leverage of 1
+        abs_sum = scaled_weights.abs().sum()
+        if abs_sum > 1:
+            scaled_weights = scaled_weights / abs_sum
+
+        # Apply for rebalance period
+        end_idx = min(i + rebal_freq, len(close))
+        for j in range(i, end_idx):
+            weights.iloc[j] = scaled_weights.values
+
+    return weights
+
+
+# ═══════════════════════════════════════════════════════════════
 # STRATEGY REGISTRY
 # ═══════════════════════════════════════════════════════════════
 
@@ -667,5 +914,20 @@ STRATEGIES = {
         "fn": breakout,
         "name": "52-Week High Breakout",
         "description": "Buys stocks at new 52-week highs with stop-loss (George & Hwang 2004)",
+    },
+    "low_volatility": {
+        "fn": low_volatility,
+        "name": "Low Volatility Anomaly",
+        "description": "Long low-vol, short high-vol stocks with inverse-vol weighting (AQR/Robeco)",
+    },
+    "overnight_drift": {
+        "fn": overnight_drift,
+        "name": "Overnight Drift",
+        "description": "Exploits overnight return premium with drift consistency filter (Two Sigma style)",
+    },
+    "adaptive_momentum": {
+        "fn": adaptive_momentum,
+        "name": "Adaptive Momentum",
+        "description": "Multi-horizon trend-following with regime adaptation (Man AHL/Winton style)",
     },
 }

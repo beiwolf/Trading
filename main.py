@@ -54,6 +54,13 @@ STRATEGY_ALIASES = {
     "rotate": "sector_rotation",
     "bo": "breakout",
     "new52": "breakout",
+    # Wave 2 strategies
+    "lv": "low_volatility",
+    "lowvol": "low_volatility",
+    "on": "overnight_drift",
+    "overnight": "overnight_drift",
+    "am": "adaptive_momentum",
+    "adapt": "adaptive_momentum",
 }
 
 # Keys treated as benchmarks — excluded from portfolio combining
@@ -134,6 +141,9 @@ def get_strategy_params(key):
         "trend_200": TREND_200,
         "sector_rotation": SECTOR_ROTATION,
         "breakout": BREAKOUT,
+        "low_volatility": LOW_VOLATILITY,
+        "overnight_drift": OVERNIGHT_DRIFT,
+        "adaptive_momentum": ADAPTIVE_MOMENTUM,
     }
     return param_map.get(key, {})
 

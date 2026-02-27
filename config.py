@@ -102,6 +102,31 @@ BREAKOUT = {
     "stop_pct": 0.08,           # Stop-loss: exit if price drops 8% from entry
 }
 
+# ─── LOW VOLATILITY ANOMALY ────────────────────────────────
+LOW_VOLATILITY = {
+    "volatility_window": 60,        # Trailing vol lookback (trading days)
+    "rebalance_frequency": 21,      # Rebalance monthly
+    "long_pct": 0.20,               # Long lowest 20% vol stocks
+    "short_pct": 0.20,              # Short highest 20% vol stocks
+}
+
+# ─── OVERNIGHT DRIFT ──────────────────────────────────────
+OVERNIGHT_DRIFT = {
+    "lookback": 40,                 # Trailing window for average overnight return
+    "rebalance_frequency": 5,       # Rebalance weekly
+    "long_pct": 0.30,               # Long top 30% by overnight drift
+    "short_pct": 0.30,              # Short bottom 30% by overnight drift
+    "min_avg_drift": 0.0,           # Minimum drift threshold to trade
+}
+
+# ─── ADAPTIVE MOMENTUM ────────────────────────────────────
+ADAPTIVE_MOMENTUM = {
+    "horizons": [21, 63, 126],      # Short / medium / long lookback periods
+    "eval_window": 63,              # Window to evaluate each horizon's accuracy
+    "vol_target": 0.15,             # Annualized vol target per position
+    "rebalance_frequency": 5,       # Rebalance weekly
+}
+
 # ─── PORTFOLIO OPTIMIZATION ─────────────────────────────────────
 OPTIMIZATION = {
     "method": "risk_parity",    # equal_weight | risk_parity | max_sharpe | half_kelly

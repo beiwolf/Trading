@@ -167,7 +167,7 @@
       <div class="stat-label">SPY Buy &amp; Hold Benchmark</div>
     </div>
     <div class="stat">
-      <div class="stat-value yellow">8</div>
+      <div class="stat-value yellow">11</div>
       <div class="stat-label">Strategies Tested</div>
     </div>
     <div class="stat">
@@ -185,7 +185,7 @@
       <div class="card-body">
         <div class="card-title">Full Backtest Report</div>
         <div class="card-desc">
-          Complete performance analysis of all 8 strategies vs SPY and IREN benchmarks.
+          Complete performance analysis of all 11 strategies vs SPY and IREN benchmarks.
           Includes equity curves, Sharpe ratios, drawdowns, monthly heatmaps,
           and a beginner-friendly explainer section.
         </div>
@@ -249,6 +249,39 @@
         <div class="card-desc">Long/short portfolio scored on momentum, value, quality and low volatility —
         a simplified version of Fama-French factor investing.</div>
         <span class="card-tag">Long/Short</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🎯</div>
+      <div class="card-body">
+        <div class="card-title">Adaptive Momentum  <span style="color:#3fb950;font-size:.9em">+23%</span></div>
+        <div class="card-desc">Blends short (21d), medium (63d), and long (126d) momentum signals,
+        weighting each by recent predictive accuracy. Vol-targeted positions.
+        Inspired by Man AHL and Winton trend-following research.</div>
+        <span class="card-tag green">Lowest Max DD (−14%)</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">📉</div>
+      <div class="card-body">
+        <div class="card-title">Low Volatility Anomaly  <span style="color:#8b949e;font-size:.9em">−52%</span></div>
+        <div class="card-desc">Long lowest-vol quintile, short highest-vol quintile with inverse-vol
+        weighting. Based on Baker, Bradley &amp; Wurgler (2011). Traded by AQR, Robeco,
+        and MSCI Min-Vol indices. Underperformed in this tech-heavy universe.</div>
+        <span class="card-tag">Long/Short</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🌙</div>
+      <div class="card-body">
+        <div class="card-title">Overnight Drift  <span style="color:#8b949e;font-size:.9em">−33%</span></div>
+        <div class="card-desc">Exploits the overnight return anomaly — stocks earn disproportionate
+        returns between close and next-day open. Ranks by drift consistency.
+        Documented by Cliff, Cooper &amp; Gulen (2008). Signal used at Two Sigma.</div>
+        <span class="card-tag">Market-Neutral</span>
       </div>
     </div>
 
