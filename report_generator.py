@@ -263,14 +263,301 @@ def _print_summary_table(reports: Dict[str, RiskReport]):
         print(tabulate(rows, headers=headers, tablefmt="grid"))
 
 
+def _build_explainer_section(reports: Dict[str, RiskReport]) -> str:
+    """Build a plain-English explainer section for beginners."""
+
+    # ── Strategy plain-English descriptions ──────────────────────────────────
+    strategy_info = {
+        "mean_reversion": {
+            "emoji": "🔄",
+            "title": "Mean Reversion",
+            "plain": (
+                "Think of a rubber band. When a stock price gets stretched too far "
+                "in one direction, this strategy bets it'll snap back. It buys stocks "
+                "that have fallen unusually far and sells (shorts) stocks that have "
+                "climbed unusually high. Works best in calm, sideways markets."
+            ),
+        },
+        "momentum": {
+            "emoji": "🚀",
+            "title": "Momentum / Trend Following",
+            "plain": (
+                "Surf the wave. If a stock has been rising, keep riding it up. "
+                "If it's been falling, avoid it (or bet against it). Like a train "
+                "that tends to keep moving once it gets going. Works best during "
+                "strong market trends."
+            ),
+        },
+        "pairs_trading": {
+            "emoji": "⚖️",
+            "title": "Pairs Trading",
+            "plain": (
+                "Play two stocks off each other. Find two companies that tend to "
+                "move together (e.g., two big banks). When one gets ahead of the "
+                "other, bet they'll realign — buy the laggard, sell the leader. "
+                "This strategy doesn't need the market to go up or down — it just "
+                "needs the gap to close."
+            ),
+        },
+        "stat_arb": {
+            "emoji": "🧮",
+            "title": "Statistical Arbitrage (PCA)",
+            "plain": (
+                "Advanced math-based mispricing detector. Uses a technique called "
+                "PCA (Principal Component Analysis) to strip out broad market moves "
+                "from each stock's price. Whatever's left — the 'unexplained' part — "
+                "is traded when it drifts too far. Think of it as finding tiny "
+                "mispricings across dozens of stocks simultaneously."
+            ),
+        },
+        "multi_factor": {
+            "emoji": "📊",
+            "title": "Multi-Factor Model",
+            "plain": (
+                "A stock report card. Every stock gets graded on four qualities: "
+                "trend (is it going up?), value (is it cheap?), stability (does it "
+                "move smoothly?), and profitability (is the company healthy?). "
+                "The top-ranked stocks are bought; the bottom-ranked are sold. "
+                "Inspired by academic research from Fama and French."
+            ),
+        },
+        "trend_200": {
+            "emoji": "📈",
+            "title": "200-Day MA Trend Filter",
+            "plain": (
+                "The simplest strategy that actually has a long track record. "
+                "Rule: if a stock's price is above its 200-day average, hold it. "
+                "If it drops below, sell and hold cash. That's it. During a bear "
+                "market most stocks fall below their averages, so the strategy "
+                "automatically moves toward cash and avoids the worst crashes."
+            ),
+        },
+        "sector_rotation": {
+            "emoji": "🔁",
+            "title": "Sector Rotation",
+            "plain": (
+                "The economy runs in cycles — tech booms, then energy leads, then "
+                "healthcare is defensive. This strategy ranks the five sectors "
+                "(tech, finance, healthcare, energy, consumer) by their 3-month "
+                "return, then puts all money into the top two. If all sectors are "
+                "losing, it stays in cash. Rebalances every month."
+            ),
+        },
+        "breakout": {
+            "emoji": "💥",
+            "title": "52-Week High Breakout",
+            "plain": (
+                "Buy stocks making new yearly highs — they tend to keep going. "
+                "Psychology: when a stock hits a price it hasn't been at in a year, "
+                "it often has strong momentum behind it. Entry: new 52-week high "
+                "with high volume. Exit: either an 8% stop-loss (if it turns), or "
+                "after 20 trading days (harvest the gain)."
+            ),
+        },
+    }
+
+    # ── Dynamic plain-English results commentary ──────────────────────────────
+    strategy_reports = {k: v for k, v in reports.items() if k != "Benchmark"}
+    benchmark = reports.get("Benchmark")
+
+    best_name = max(strategy_reports, key=lambda k: strategy_reports[k].total_return)
+    best = strategy_reports[best_name]
+    safest_name = min(strategy_reports, key=lambda k: strategy_reports[k].max_drawdown)
+    safest = strategy_reports[safest_name]
+
+    beat_benchmark = [k for k, r in strategy_reports.items()
+                      if benchmark and r.total_return > benchmark.total_return]
+
+    bm_return_str = f"{benchmark.total_return:.1%}" if benchmark else "N/A"
+    bm_cagr_str   = f"{benchmark.cagr:.1%}"         if benchmark else "N/A"
+
+    verdict_color = "#06d6a0" if best.total_return > 0 else "#f59e0b"
+    verdict = (
+        f"The best-performing strategy was <b>{best_name.replace('_', ' ').title()}</b> "
+        f"with a total return of <b>{best.total_return:.1%}</b> "
+        f"({best.cagr:.1%}/year on average). "
+    )
+    if beat_benchmark:
+        verdict += (
+            f"It outperformed the S&P 500 benchmark ({bm_return_str} total). "
+        )
+    else:
+        verdict += (
+            f"However, none of the strategies beat simply holding the S&P 500 index "
+            f"(SPY), which returned <b>{bm_return_str}</b> total "
+            f"({bm_cagr_str}/year). That's a useful reminder: beating the market "
+            f"is genuinely hard — even for sophisticated algorithms."
+        )
+
+    safest_note = (
+        f"The most stable strategy was <b>{safest_name.replace('_', ' ').title()}</b>, "
+        f"whose worst losing streak from peak to trough was only "
+        f"<b>{safest.max_drawdown:.1%}</b> — much smaller than the others."
+    )
+
+    # ── Metric glossary ───────────────────────────────────────────────────────
+    glossary = [
+        ("Total Return",
+         "How much money the strategy made (or lost) over the entire test period. "
+         "+35% means $100k grew to $135k. -28% means it shrank to $72k."),
+        ("CAGR",
+         "Compound Annual Growth Rate — your average yearly return. Like an interest "
+         "rate that compounds. 10% CAGR means your money roughly doubles every 7 years."),
+        ("Annual Volatility",
+         "How wildly the portfolio swings day-to-day, measured per year. Low = smooth "
+         "ride. High = stomach-churning ups and downs. The S&P 500 is typically ~15–20%."),
+        ("Sharpe Ratio",
+         "Return per unit of risk. Above 1.0 = good. Above 2.0 = excellent. Below 0 "
+         "means you'd have been better off in a savings account. It's the single most "
+         "commonly used measure of risk-adjusted performance."),
+        ("Sortino Ratio",
+         "Like the Sharpe Ratio, but only penalises downside swings (bad volatility). "
+         "A strategy with big gains but few big losses scores better here than on Sharpe."),
+        ("Max Drawdown",
+         "The worst peak-to-trough loss you would have experienced. If it's -50%, "
+         "your portfolio once fell by half before recovering. Think: could you sleep "
+         "through that without panic-selling?"),
+        ("Max Drawdown Duration",
+         "How many days the portfolio spent underwater — below its previous peak. "
+         "A 2-year duration means you'd have waited 2 years just to get back to even."),
+        ("Win Rate",
+         "The percentage of trading days (or trades) that made money. 50% is a coin "
+         "flip. Profitable systems can win with less than 50% if their winners are "
+         "much bigger than their losers."),
+        ("Profit Factor",
+         "Total profits divided by total losses. 1.5 means for every $1 lost, "
+         "$1.50 was made. Above 1.0 = profitable overall. Below 1.0 = losing money."),
+        ("VaR 95%",
+         "Value at Risk — on a typical bad day (the worst 5% of days), how much "
+         "might you lose? A VaR of 1% means there's a 5% chance of losing more "
+         "than 1% in a single day."),
+        ("Skewness",
+         "Whether bad days are worse than good days are good, or vice versa. "
+         "Negative skew (common in trading) means rare but severe crashes. "
+         "Positive skew means occasional big wins."),
+        ("Kurtosis",
+         "How often extreme moves happen. Higher kurtosis = more 'fat tails' — "
+         "more frequent dramatic crashes or spikes than a normal distribution "
+         "would predict."),
+        ("Kelly Fraction",
+         "A formula for how much of your capital to bet per trade for optimal growth. "
+         "In practice, most traders use half-Kelly or less. A negative Kelly means "
+         "don't bet at all — the edge is negative."),
+        ("Information Ratio",
+         "How consistently the strategy outperforms the benchmark. Higher = more "
+         "reliably beating the market rather than just occasionally."),
+    ]
+
+    # ── Build HTML ────────────────────────────────────────────────────────────
+    html = """
+<div class="explainer-section">
+<h2>📖 What Does All This Mean? (Beginner's Guide)</h2>
+
+<div class="card">
+  <h3 style="color:#06d6a0;margin-top:0;">What is a Backtest?</h3>
+  <p>
+    A <b>backtest</b> is a simulation. We take a trading strategy, feed it 10 years of
+    real historical stock prices, and watch what would have happened if we'd followed
+    that strategy every day — automatically, with no emotions. The goal is to see
+    whether the strategy would have made money before risking real cash on it.
+  </p>
+  <p>
+    Think of it like a flight simulator for trading. It's not a guarantee of future
+    results, but it's a much safer way to evaluate an idea than just jumping in.
+  </p>
+  <p style="color:#f59e0b;">
+    ⚠️ <b>Important caveat:</b> Real trading involves psychological pressure, taxes,
+    larger transaction costs, and the fact that once everyone knows about a strategy,
+    it stops working. Past backtested results are <i>not</i> a promise of future returns.
+  </p>
+</div>
+
+<h3 style="color:#3b82f6;">The Strategies, Explained Simply</h3>
+<div class="strategy-grid">
+"""
+
+    for key, info in strategy_info.items():
+        if key in reports:
+            r = reports[key]
+            return_color = "#06d6a0" if r.total_return > 0 else "#ef4444"
+            sharpe_note = (
+                "solid" if r.sharpe_ratio > 0.5
+                else ("breakeven" if r.sharpe_ratio > 0 else "negative")
+            )
+            html += f"""
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">{info['emoji']}</span>
+      <span class="strategy-title">{info['title']}</span>
+      <span class="strategy-return" style="color:{return_color};">{r.total_return:.1%} total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">{info['plain']}</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:{return_color};">{r.total_return:.1%}</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>{r.sharpe_ratio:.2f}</b> ({sharpe_note})
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">{r.max_drawdown:.1%}</b>
+    </div>
+  </div>"""
+
+    html += f"""
+</div>
+
+<div class="card" style="border-color:#3b82f6;">
+  <h3 style="color:#3b82f6;margin-top:0;">🏆 Plain-English Summary of Results</h3>
+  <p style="color:{verdict_color};">{verdict}</p>
+  <p style="color:#94a3b8;">{safest_note}</p>
+"""
+    if benchmark:
+        html += f"""
+  <p style="color:#94a3b8;">
+    <b>The SPY benchmark</b> is the simplest possible strategy: just buy and hold
+    the S&P 500 index. It returned <b style="color:#06d6a0;">{benchmark.total_return:.1%}</b>
+    ({benchmark.cagr:.1%}/year) with a Sharpe of <b>{benchmark.sharpe_ratio:.2f}</b>.
+    Beating it consistently is the bar that even most professional fund managers fail to clear.
+  </p>"""
+
+    iren_bh = reports.get("IREN (B&H)")
+    if iren_bh:
+        iren_color = "#06d6a0" if iren_bh.total_return > 0 else "#ef4444"
+        html += f"""
+  <p style="color:#94a3b8;">
+    <b>The IREN benchmark</b> is a buy-and-hold of IREN (Iris Energy), a Bitcoin mining
+    company listed since late 2021. It returned
+    <b style="color:{iren_color};">{iren_bh.total_return:.1%}</b>
+    ({iren_bh.cagr:.1%}/year) with a Sharpe of <b>{iren_bh.sharpe_ratio:.2f}</b>
+    and a max drawdown of <b style="color:#f59e0b;">{iren_bh.max_drawdown:.1%}</b>.
+    Crypto-adjacent stocks like IREN can produce dramatic gains or losses —
+    high reward but extremely high risk.
+  </p>"""
+
+    html += """
+</div>
+
+<h3 style="color:#3b82f6;">📚 Metric Glossary</h3>
+<table>
+  <thead><tr><th style="width:200px;">Term</th><th>What it means in plain English</th></tr></thead>
+  <tbody>
+"""
+    for term, explanation in glossary:
+        html += f"<tr><td><b>{term}</b></td><td style='color:#94a3b8;'>{explanation}</td></tr>\n"
+
+    html += """
+  </tbody>
+</table>
+</div>
+"""
+    return html
+
+
 def _generate_html_report(reports: Dict[str, RiskReport], results, out_dir: str):
     """Generate a standalone HTML report."""
     html = """<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <title>Quant Engine — Backtest Report</title>
 <style>
-body { background: #0a0e17; color: #e2e8f0; font-family: 'Courier New', monospace; padding: 20px; }
+body { background: #0a0e17; color: #e2e8f0; font-family: 'Courier New', monospace; padding: 20px; max-width: 1400px; margin: 0 auto; }
 h1 { color: #06d6a0; } h2 { color: #3b82f6; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
+h3 { color: #e2e8f0; }
 table { border-collapse: collapse; width: 100%; margin: 16px 0; }
 th { background: #1e293b; color: #94a3b8; padding: 8px 12px; text-align: left; font-size: 11px; }
 td { padding: 6px 12px; border-bottom: 1px solid #1e293b; font-size: 12px; }
@@ -278,13 +565,25 @@ tr:hover td { background: #111827; }
 .positive { color: #06d6a0; } .negative { color: #ef4444; }
 img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
 .card { background: #111827; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin: 12px 0; }
+p { line-height: 1.7; }
+.strategy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 12px; }
+.strategy-card { display: flex; flex-direction: column; }
+.strategy-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.strategy-emoji { font-size: 20px; }
+.strategy-title { font-weight: bold; color: #e2e8f0; flex: 1; }
+.strategy-return { font-weight: bold; font-size: 13px; }
+.strategy-verdict { font-size: 11px; color: #64748b; margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; }
+.explainer-section { margin-bottom: 40px; }
 </style></head><body>
 <h1>Σ QUANT ALPHA ENGINE</h1>
 <p style="color:#64748b;">Systematic Multi-Strategy Backtest Report</p>
 """
 
+    # Beginner explainer section
+    html += _build_explainer_section(reports)
+
     # Summary table
-    html += "<h2>Performance Summary</h2><table><thead><tr><th>Metric</th>"
+    html += "<h2>📈 Technical Performance Summary</h2><table><thead><tr><th>Metric</th>"
     for name in reports:
         html += f"<th>{name}</th>"
     html += "</tr></thead><tbody>"

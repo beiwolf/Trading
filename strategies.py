@@ -442,6 +442,188 @@ def _rank_normalize(value):
 
 
 # ═══════════════════════════════════════════════════════════════
+# 6. 200-DAY MA TREND FILTER (Long-Only)
+# ═══════════════════════════════════════════════════════════════
+
+def trend_200(data: dict, params: dict) -> pd.DataFrame:
+    """
+    Simple long-only trend filter: hold a stock only when its price
+    is above the 200-day SMA, otherwise stay flat (cash).
+
+    Equal-weights all stocks currently "in trend". Rotates to cash
+    automatically during bear markets and corrections.
+
+    One of the most robust and well-documented strategies in
+    empirical finance (Faber 2007, Antonacci 2012).
+    """
+    close = data["close"]
+    sma200 = data.get("sma_200", close.rolling(200).mean())
+
+    # Binary signal: 1 if above 200-SMA, 0 if below
+    in_trend = (close > sma200).astype(float)
+
+    # Forward-fill last sma200 NaN (first 200 days have no signal)
+    in_trend = in_trend.where(sma200.notna(), 0)
+
+    # Equal-weight across all in-trend stocks
+    n_active = in_trend.sum(axis=1).replace(0, np.nan)
+    weights = in_trend.div(n_active, axis=0).fillna(0)
+
+    return weights
+
+
+# ═══════════════════════════════════════════════════════════════
+# 7. SECTOR ROTATION (Relative Momentum)
+# ═══════════════════════════════════════════════════════════════
+
+def sector_rotation(data: dict, params: dict) -> pd.DataFrame:
+    """
+    Rotates capital monthly into the best-performing sectors.
+
+    1. Score each sector by its average 63-day (3-month) return
+    2. Invest equally in stocks within the top N sectors
+    3. Only invest in sectors with positive momentum (else cash)
+    4. Rebalance every ~21 trading days (monthly)
+
+    Sector momentum is one of the most persistent effects in
+    empirical finance (Moskowitz & Grinblatt 1999).
+    """
+    close = data["close"]
+    sectors = params.get("sectors", {})
+    lookback = params.get("lookback", 63)
+    n_top = params.get("n_top_sectors", 2)
+    rebal_freq = params.get("rebalance_frequency", 21)
+
+    # Filter sectors to tickers we actually have
+    sector_map = {
+        s: [t for t in tkrs if t in close.columns]
+        for s, tkrs in sectors.items()
+    }
+    sector_map = {s: t for s, t in sector_map.items() if t}
+
+    weights = pd.DataFrame(0.0, index=close.index, columns=close.columns)
+    if not sector_map:
+        return weights
+
+    for i in range(lookback, len(close), rebal_freq):
+        sector_returns = {}
+        for sector, tkrs in sector_map.items():
+            start_px = close[tkrs].iloc[i - lookback]
+            end_px = close[tkrs].iloc[i]
+            valid = (start_px > 0) & (end_px > 0) & start_px.notna() & end_px.notna()
+            if valid.any():
+                sector_returns[sector] = (end_px[valid] / start_px[valid] - 1).mean()
+
+        if not sector_returns:
+            continue
+
+        # Rank sectors; only enter those with positive returns
+        ranked = sorted(sector_returns.items(), key=lambda x: x[1], reverse=True)
+        top_sectors = [s for s, r in ranked[:n_top] if r > 0]
+
+        if not top_sectors:
+            continue  # All sectors negative — stay in cash
+
+        all_stocks = []
+        for s in top_sectors:
+            all_stocks.extend(sector_map[s])
+
+        if not all_stocks:
+            continue
+
+        w = 1.0 / len(all_stocks)
+        end_idx = min(i + rebal_freq, len(close))
+        for j in range(i, end_idx):
+            for t in all_stocks:
+                if t in weights.columns:
+                    weights.iloc[j, weights.columns.get_loc(t)] = w
+
+    return weights
+
+
+# ═══════════════════════════════════════════════════════════════
+# 8. 52-WEEK HIGH BREAKOUT (Momentum Breakout)
+# ═══════════════════════════════════════════════════════════════
+
+def breakout(data: dict, params: dict) -> pd.DataFrame:
+    """
+    Buys stocks making new 52-week (rolling) highs.
+
+    Entry: today's close >= highest close of past lookback days
+           (with optional volume confirmation)
+    Exit:  stop-loss at -stop_pct from entry, OR max_hold days
+
+    Captures momentum bursts at new highs. Documented to produce
+    positive excess returns (George & Hwang 2004).
+    """
+    close = data["close"]
+    volume = data["volume"]
+    vol_sma = data.get("volume_sma_20")
+    lookback = params.get("lookback", 252)
+    hold_days = params.get("hold_days", 20)
+    vol_mult = params.get("volume_multiplier", 1.5)
+    stop_pct = params.get("stop_pct", 0.08)
+
+    # Precompute rolling max (shift 1 to avoid look-ahead bias)
+    rolling_max = close.rolling(lookback).max().shift(1)
+
+    # Volume filter available only when volume is real (not NaN-filled cache)
+    has_volume = not volume.isnull().all().all()
+
+    weights = pd.DataFrame(0.0, index=close.index, columns=close.columns)
+    entry_prices = {}  # ticker -> entry price
+    days_held = {}     # ticker -> days since entry
+
+    for i in range(lookback, len(close)):
+        active = {}
+
+        for col in close.columns:
+            price = close[col].iloc[i]
+            if pd.isna(price) or price <= 0:
+                continue
+
+            # ── Manage existing position ───────────────────────
+            if col in entry_prices:
+                ep = entry_prices[col]
+                dh = days_held.get(col, 0) + 1
+                days_held[col] = dh
+
+                if price < ep * (1 - stop_pct) or dh >= hold_days:
+                    del entry_prices[col]
+                    days_held.pop(col, None)
+                else:
+                    active[col] = 1.0
+                continue
+
+            # ── Check for new breakout ─────────────────────────
+            rmax = rolling_max[col].iloc[i]
+            if pd.isna(rmax) or rmax <= 0:
+                continue
+            if price < rmax:
+                continue  # Not a new high
+
+            # Volume confirmation (skip if data unavailable)
+            if has_volume and vol_sma is not None:
+                v = volume[col].iloc[i]
+                vs = vol_sma[col].iloc[i]
+                if not (pd.isna(v) or pd.isna(vs) or v > vol_mult * vs):
+                    continue  # Volume too thin
+
+            # Enter position
+            entry_prices[col] = price
+            days_held[col] = 1
+            active[col] = 1.0
+
+        # Equal-weight across all active positions
+        if active:
+            w = 1.0 / len(active)
+            for col in active:
+                weights.iloc[i, weights.columns.get_loc(col)] = w
+
+    return weights
+
+
+# ═══════════════════════════════════════════════════════════════
 # STRATEGY REGISTRY
 # ═══════════════════════════════════════════════════════════════
 
@@ -470,5 +652,20 @@ STRATEGIES = {
         "fn": multi_factor,
         "name": "Multi-Factor Model",
         "description": "Momentum + Value + Low Vol + Quality (Fama-French inspired)",
+    },
+    "trend_200": {
+        "fn": trend_200,
+        "name": "200-Day MA Trend Filter",
+        "description": "Long-only: hold stocks above 200-SMA, cash when below (Faber 2007)",
+    },
+    "sector_rotation": {
+        "fn": sector_rotation,
+        "name": "Sector Rotation (Relative Momentum)",
+        "description": "Rotates into top 2 sectors by 63-day momentum, rebalances monthly",
+    },
+    "breakout": {
+        "fn": breakout,
+        "name": "52-Week High Breakout",
+        "description": "Buys stocks at new 52-week highs with stop-loss (George & Hwang 2004)",
     },
 }
