@@ -81,6 +81,27 @@ FACTOR_MODEL = {
     "short_pct": 0.20,          # Go short bottom 20%
 }
 
+# ─── 200-DAY MA TREND FILTER ────────────────────────────────────
+TREND_200 = {
+    # No parameters needed — uses sma_200 precomputed by data_fetcher
+}
+
+# ─── SECTOR ROTATION ────────────────────────────────────────────
+SECTOR_ROTATION = {
+    "lookback": 63,             # 3-month momentum lookback (trading days)
+    "n_top_sectors": 2,         # Number of sectors to invest in
+    "rebalance_frequency": 21,  # Rebalance every ~21 days (monthly)
+    "sectors": UNIVERSE,        # Sector → tickers mapping from above
+}
+
+# ─── 52-WEEK HIGH BREAKOUT ──────────────────────────────────────
+BREAKOUT = {
+    "lookback": 252,            # Rolling window for "52-week" high (trading days)
+    "hold_days": 20,            # Max holding period after entry
+    "volume_multiplier": 1.5,   # Min volume vs 20-day avg to confirm breakout
+    "stop_pct": 0.08,           # Stop-loss: exit if price drops 8% from entry
+}
+
 # ─── PORTFOLIO OPTIMIZATION ─────────────────────────────────────
 OPTIMIZATION = {
     "method": "risk_parity",    # equal_weight | risk_parity | max_sharpe | half_kelly

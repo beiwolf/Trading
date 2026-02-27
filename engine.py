@@ -148,8 +148,13 @@ def run_benchmark(data: dict, benchmark: str, initial_capital: float) -> Backtes
     if benchmark not in close.columns:
         # Need to fetch benchmark separately
         import yfinance as yf
-        bm_data = yf.download(benchmark, start=close.index[0], end=close.index[-1], progress=False)
+        bm_data = yf.download(benchmark, start=close.index[0], end=close.index[-1],
+                              auto_adjust=True, progress=False)
         bm_close = bm_data["Close"]
+        # yfinance ≥1.x returns a DataFrame even for single tickers; squeeze to Series
+        if isinstance(bm_close, pd.DataFrame):
+            bm_close = bm_close.iloc[:, 0]
+        bm_close = bm_close.dropna()
         bm_returns = np.log(bm_close / bm_close.shift(1)).dropna()
         common = close.index.intersection(bm_returns.index)
         bm_ret = bm_returns.loc[common]

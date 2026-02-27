@@ -47,7 +47,17 @@ STRATEGY_ALIASES = {
     "factor": "multi_factor",
     "mf": "multi_factor",
     "ff": "multi_factor",
+    # New strategies
+    "t200": "trend_200",
+    "ma200": "trend_200",
+    "sr": "sector_rotation",
+    "rotate": "sector_rotation",
+    "bo": "breakout",
+    "new52": "breakout",
 }
+
+# Keys treated as benchmarks — excluded from portfolio combining
+BENCHMARK_KEYS = {"IREN (B&H)"}
 
 
 def parse_args():
@@ -121,6 +131,9 @@ def get_strategy_params(key):
         "pairs_trading": PAIRS,
         "stat_arb": STAT_ARB,
         "multi_factor": FACTOR_MODEL,
+        "trend_200": TREND_200,
+        "sector_rotation": SECTOR_ROTATION,
+        "breakout": BREAKOUT,
     }
     return param_map.get(key, {})
 
@@ -202,7 +215,7 @@ def main():
         print("\n  ❌ No strategies produced results. Exiting.")
         sys.exit(1)
 
-    # ─── Run benchmark ───────────────────────────────────────
+    # ─── Run benchmarks ──────────────────────────────────────
     print(f"\n  ▶ Benchmark ({args.benchmark})")
     try:
         benchmark_result = run_benchmark(data, args.benchmark, args.capital)
@@ -214,12 +227,27 @@ def main():
         print(f"    ⚠️  Could not compute benchmark: {e}")
         benchmark_result = None
 
-    # ─── Combine strategies ──────────────────────────────────
-    if len(backtest_results) > 1:
+    # ─── IREN buy-and-hold benchmark ─────────────────────────
+    print(f"\n  ▶ IREN (Buy & Hold — crypto miner benchmark)")
+    try:
+        iren_result = run_benchmark(data, "IREN", args.capital)
+        ir_ret = iren_result.returns
+        ir_total = (1 + ir_ret).prod() - 1
+        ir_sharpe = ir_ret.mean() / ir_ret.std() * np.sqrt(252) if ir_ret.std() > 0 else 0
+        print(f"    ✅ Return: {ir_total:.2%} | Sharpe: {ir_sharpe:.3f}")
+        backtest_results["IREN (B&H)"] = iren_result
+    except Exception as e:
+        print(f"    ⚠️  Could not compute IREN benchmark: {e}")
+
+    # ─── Combine strategies (exclude benchmark buy-and-holds) ─
+    strategy_results_only = {
+        k: v for k, v in backtest_results.items() if k not in BENCHMARK_KEYS
+    }
+    if len(strategy_results_only) > 1:
         print(f"\n  ━━━ STEP 3: Portfolio Optimization ({args.optimize}) ━━━")
         try:
             combined = combine_strategies(
-                backtest_results,
+                strategy_results_only,
                 method=args.optimize,
                 lookback=OPTIMIZATION["lookback_for_weights"],
                 rebalance_days=OPTIMIZATION["rebalance_days"],
