@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Σ Quant Alpha Engine — Results</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Header ─────────────────────────── */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .logo {
+      font-size: 3rem;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #58a6ff;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      color: #8b949e;
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.8rem;
+      color: #8b949e;
+      margin-top: 12px;
+    }
+
+    /* ── Cards ──────────────────────────── */
+    .cards { display: grid; gap: 16px; }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 24px 28px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .2s, transform .2s;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    .card:hover {
+      border-color: #58a6ff;
+      transform: translateY(-2px);
+    }
+    .card-icon {
+      font-size: 2.2rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .card-body { flex: 1; }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: #8b949e;
+      line-height: 1.5;
+    }
+    .card-tag {
+      display: inline-block;
+      background: #1f3548;
+      color: #58a6ff;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    .card-tag.green { background: #1a2d22; color: #3fb950; }
+    .card-tag.yellow { background: #2d2a1a; color: #d29922; }
+
+    /* ── Stats strip ─────────────────────── */
+    .stats-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .stat { flex: 1; min-width: 120px; text-align: center; }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #3fb950;
+    }
+    .stat-value.blue { color: #58a6ff; }
+    .stat-value.yellow { color: #d29922; }
+    .stat-label {
+      font-size: 0.78rem;
+      color: #8b949e;
+      margin-top: 4px;
+    }
+
+    /* ── Section heading ─────────────────── */
+    .section-heading {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+      margin: 32px 0 12px;
+    }
+
+    /* ── Footer ─────────────────────────── */
+    footer {
+      text-align: center;
+      margin-top: 56px;
+      font-size: 0.8rem;
+      color: #484f58;
+      line-height: 1.7;
+    }
+    footer a { color: #58a6ff; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── Header ─────────────────────────────────── -->
+  <header>
+    <div class="logo">Σ</div>
+    <h1>Quant Alpha Engine</h1>
+    <p>Multi-strategy systematic backtesting · 2015 – 2025 · S&amp;P 500 universe</p>
+    <span class="badge">Educational / Research Only — Not Financial Advice</span>
+  </header>
+
+  <!-- ── Quick stats ─────────────────────────────── -->
+  <div class="stats-strip">
+    <div class="stat">
+      <div class="stat-value">+349%</div>
+      <div class="stat-label">Best Strategy (Sector Rotation)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value blue">+190%</div>
+      <div class="stat-label">SPY Buy &amp; Hold Benchmark</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value yellow">8</div>
+      <div class="stat-label">Strategies Tested</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">10yr</div>
+      <div class="stat-label">Backtest Window</div>
+    </div>
+  </div>
+
+  <!-- ── Main reports ────────────────────────────── -->
+  <div class="section-heading">Reports</div>
+  <div class="cards">
+
+    <a class="card" href="report.html">
+      <div class="card-icon">📊</div>
+      <div class="card-body">
+        <div class="card-title">Full Backtest Report</div>
+        <div class="card-desc">
+          Complete performance analysis of all 8 strategies vs SPY and IREN benchmarks.
+          Includes equity curves, Sharpe ratios, drawdowns, monthly heatmaps,
+          and a beginner-friendly explainer section.
+        </div>
+        <span class="card-tag green">View Report →</span>
+      </div>
+    </a>
+
+    <a class="card" href="live_signal_2026-02-27.html">
+      <div class="card-icon">📡</div>
+      <div class="card-body">
+        <div class="card-title">Live Signal — Feb 27, 2026</div>
+        <div class="card-desc">
+          Current monthly sector rotation signal. Shows which sectors rank highest
+          right now, what to buy/sell vs last month, and exact position sizes
+          for both individual stocks and ETF mode (XLE / XLF / XLK etc.).
+        </div>
+        <span class="card-tag yellow">Current Signal →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- ── Strategy summary ────────────────────────── -->
+  <div class="section-heading">Strategies at a glance</div>
+  <div class="cards">
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🔄</div>
+      <div class="card-body">
+        <div class="card-title">Sector Rotation  <span style="color:#3fb950;font-size:.9em">+349%</span></div>
+        <div class="card-desc">Every month, rank all 5 sectors by their 3-month return and rotate
+        into the top 2. Simple momentum rule — ride winners, ditch losers.</div>
+        <span class="card-tag green">Best performer</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">📈</div>
+      <div class="card-body">
+        <div class="card-title">200-Day MA Trend Filter  <span style="color:#3fb950;font-size:.9em">+252%</span></div>
+        <div class="card-desc">Hold any stock trading above its 200-day moving average.
+        Go to cash below. A classic long-only filter popularized by Mebane Faber (2007).</div>
+        <span class="card-tag green">Beat SPY</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">🚀</div>
+      <div class="card-body">
+        <div class="card-title">52-Week High Breakout  <span style="color:#3fb950;font-size:.9em">+91%</span></div>
+        <div class="card-desc">Buy when a stock hits a new 52-week high on above-average volume.
+        Exit after 20 days or if price drops 8% from entry (stop-loss).</div>
+        <span class="card-tag">Long-only</span>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div class="card-icon">⚖️</div>
+      <div class="card-body">
+        <div class="card-title">Multi-Factor Model  <span style="color:#3fb950;font-size:.9em">+35%</span></div>
+        <div class="card-desc">Long/short portfolio scored on momentum, value, quality and low volatility —
+        a simplified version of Fama-French factor investing.</div>
+        <span class="card-tag">Long/Short</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Source code ─────────────────────────────── -->
+  <div class="section-heading">Source Code</div>
+  <div class="cards">
+    <a class="card" href="https://github.com/beiwolf/Trading">
+      <div class="card-icon">🐙</div>
+      <div class="card-body">
+        <div class="card-title">GitHub — beiwolf/Trading</div>
+        <div class="card-desc">
+          Full open-source Python codebase. Run your own backtests locally with
+          <code style="background:#21262d;padding:2px 6px;border-radius:4px;font-size:.85em">python main.py</code> —
+          free data via Yahoo Finance, no API keys required.
+        </div>
+        <span class="card-tag">View Source →</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- ── Footer ──────────────────────────────────── -->
+  <footer>
+    <p>Built with Python · <a href="https://github.com/beiwolf/Trading">github.com/beiwolf/Trading</a></p>
+    <p style="margin-top:6px;">⚠️ Educational and research purposes only. Past performance does not predict future results.<br>
+    Nothing on this site constitutes financial or investment advice.</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Quant Engine — Backtest Report</title>
+<style>
+body { background: #0a0e17; color: #e2e8f0; font-family: 'Courier New', monospace; padding: 20px; max-width: 1400px; margin: 0 auto; }
+h1 { color: #06d6a0; } h2 { color: #3b82f6; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
+h3 { color: #e2e8f0; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+th { background: #1e293b; color: #94a3b8; padding: 8px 12px; text-align: left; font-size: 11px; }
+td { padding: 6px 12px; border-bottom: 1px solid #1e293b; font-size: 12px; }
+tr:hover td { background: #111827; }
+.positive { color: #06d6a0; } .negative { color: #ef4444; }
+img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
+.card { background: #111827; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin: 12px 0; }
+p { line-height: 1.7; }
+.strategy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 12px; }
+.strategy-card { display: flex; flex-direction: column; }
+.strategy-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.strategy-emoji { font-size: 20px; }
+.strategy-title { font-weight: bold; color: #e2e8f0; flex: 1; }
+.strategy-return { font-weight: bold; font-size: 13px; }
+.strategy-verdict { font-size: 11px; color: #64748b; margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; }
+.explainer-section { margin-bottom: 40px; }
+</style></head><body>
+<h1>Σ QUANT ALPHA ENGINE</h1>
+<p style="color:#64748b;">Systematic Multi-Strategy Backtest Report</p>
+
+<div class="explainer-section">
+<h2>📖 What Does All This Mean? (Beginner's Guide)</h2>
+
+<div class="card">
+  <h3 style="color:#06d6a0;margin-top:0;">What is a Backtest?</h3>
+  <p>
+    A <b>backtest</b> is a simulation. We take a trading strategy, feed it 10 years of
+    real historical stock prices, and watch what would have happened if we'd followed
+    that strategy every day — automatically, with no emotions. The goal is to see
+    whether the strategy would have made money before risking real cash on it.
+  </p>
+  <p>
+    Think of it like a flight simulator for trading. It's not a guarantee of future
+    results, but it's a much safer way to evaluate an idea than just jumping in.
+  </p>
+  <p style="color:#f59e0b;">
+    ⚠️ <b>Important caveat:</b> Real trading involves psychological pressure, taxes,
+    larger transaction costs, and the fact that once everyone knows about a strategy,
+    it stops working. Past backtested results are <i>not</i> a promise of future returns.
+  </p>
+</div>
+
+<h3 style="color:#3b82f6;">The Strategies, Explained Simply</h3>
+<div class="strategy-grid">
+
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">🔄</span>
+      <span class="strategy-title">Mean Reversion</span>
+      <span class="strategy-return" style="color:#ef4444;">0.0% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">Think of a rubber band. When a stock price gets stretched too far in one direction, this strategy bets it'll snap back. It buys stocks that have fallen unusually far and sells (shorts) stocks that have climbed unusually high. Works best in calm, sideways markets.</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#ef4444;">0.0%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>0.00</b> (negative)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">0.0%</b>
+    </div>
+  </div>
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">🚀</span>
+      <span class="strategy-title">Momentum / Trend Following</span>
+      <span class="strategy-return" style="color:#ef4444;">-4.8% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">Surf the wave. If a stock has been rising, keep riding it up. If it's been falling, avoid it (or bet against it). Like a train that tends to keep moving once it gets going. Works best during strong market trends.</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#ef4444;">-4.8%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>-0.33</b> (negative)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">-37.0%</b>
+    </div>
+  </div>
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">⚖️</span>
+      <span class="strategy-title">Pairs Trading</span>
+      <span class="strategy-return" style="color:#06d6a0;">0.5% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">Play two stocks off each other. Find two companies that tend to move together (e.g., two big banks). When one gets ahead of the other, bet they'll realign — buy the laggard, sell the leader. This strategy doesn't need the market to go up or down — it just needs the gap to close.</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#06d6a0;">0.5%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>-1.33</b> (negative)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">-14.3%</b>
+    </div>
+  </div>
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">🧮</span>
+      <span class="strategy-title">Statistical Arbitrage (PCA)</span>
+      <span class="strategy-return" style="color:#ef4444;">-57.4% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">Advanced math-based mispricing detector. Uses a technique called PCA (Principal Component Analysis) to strip out broad market moves from each stock's price. Whatever's left — the 'unexplained' part — is traded when it drifts too far. Think of it as finding tiny mispricings across dozens of stocks simultaneously.</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#ef4444;">-57.4%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>-1.50</b> (negative)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">-58.8%</b>
+    </div>
+  </div>
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">📊</span>
+      <span class="strategy-title">Multi-Factor Model</span>
+      <span class="strategy-return" style="color:#06d6a0;">35.2% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">A stock report card. Every stock gets graded on four qualities: trend (is it going up?), value (is it cheap?), stability (does it move smoothly?), and profitability (is the company healthy?). The top-ranked stocks are bought; the bottom-ranked are sold. Inspired by academic research from Fama and French.</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#06d6a0;">35.2%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>-0.09</b> (negative)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">-24.8%</b>
+    </div>
+  </div>
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">📈</span>
+      <span class="strategy-title">200-Day MA Trend Filter</span>
+      <span class="strategy-return" style="color:#06d6a0;">251.6% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">The simplest strategy that actually has a long track record. Rule: if a stock's price is above its 200-day average, hold it. If it drops below, sell and hold cash. That's it. During a bear market most stocks fall below their averages, so the strategy automatically moves toward cash and avoids the worst crashes.</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#06d6a0;">251.6%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>0.58</b> (solid)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">-29.6%</b>
+    </div>
+  </div>
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">🔁</span>
+      <span class="strategy-title">Sector Rotation</span>
+      <span class="strategy-return" style="color:#06d6a0;">349.6% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">The economy runs in cycles — tech booms, then energy leads, then healthcare is defensive. This strategy ranks the five sectors (tech, finance, healthcare, energy, consumer) by their 3-month return, then puts all money into the top two. If all sectors are losing, it stays in cash. Rebalances every month.</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#06d6a0;">349.6%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>0.62</b> (solid)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">-26.1%</b>
+    </div>
+  </div>
+  <div class="card strategy-card">
+    <div class="strategy-header">
+      <span class="strategy-emoji">💥</span>
+      <span class="strategy-title">52-Week High Breakout</span>
+      <span class="strategy-return" style="color:#06d6a0;">90.5% total</span>
+    </div>
+    <p style="color:#94a3b8;margin:8px 0;">Buy stocks making new yearly highs — they tend to keep going. Psychology: when a stock hits a price it hasn't been at in a year, it often has strong momentum behind it. Entry: new 52-week high with high volume. Exit: either an 8% stop-loss (if it turns), or after 20 trading days (harvest the gain).</p>
+    <div class="strategy-verdict">
+      Result: <b style="color:#06d6a0;">90.5%</b> over the period
+      &nbsp;|&nbsp; Sharpe: <b>0.20</b> (breakeven)
+      &nbsp;|&nbsp; Worst dip: <b style="color:#f59e0b;">-17.6%</b>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="border-color:#3b82f6;">
+  <h3 style="color:#3b82f6;margin-top:0;">🏆 Plain-English Summary of Results</h3>
+  <p style="color:#06d6a0;">The best-performing strategy was <b>Sector Rotation</b> with a total return of <b>349.6%</b> (16.3%/year on average). It outperformed the S&P 500 benchmark (190.2% total). </p>
+  <p style="color:#94a3b8;">The most stable strategy was <b>Iren (B&H)</b>, whose worst losing streak from peak to trough was only <b>-98.2%</b> — much smaller than the others.</p>
+
+  <p style="color:#94a3b8;">
+    <b>The SPY benchmark</b> is the simplest possible strategy: just buy and hold
+    the S&P 500 index. It returned <b style="color:#06d6a0;">190.2%</b>
+    (11.3%/year) with a Sharpe of <b>0.41</b>.
+    Beating it consistently is the bar that even most professional fund managers fail to clear.
+  </p>
+  <p style="color:#94a3b8;">
+    <b>The IREN benchmark</b> is a buy-and-hold of IREN (Iris Energy), a Bitcoin mining
+    company listed since late 2021. It returned
+    <b style="color:#ef4444;">-95.9%</b>
+    (-64.1%/year) with a Sharpe of <b>-0.28</b>
+    and a max drawdown of <b style="color:#f59e0b;">-98.2%</b>.
+    Crypto-adjacent stocks like IREN can produce dramatic gains or losses —
+    high reward but extremely high risk.
+  </p>
+</div>
+
+<h3 style="color:#3b82f6;">📚 Metric Glossary</h3>
+<table>
+  <thead><tr><th style="width:200px;">Term</th><th>What it means in plain English</th></tr></thead>
+  <tbody>
+<tr><td><b>Total Return</b></td><td style='color:#94a3b8;'>How much money the strategy made (or lost) over the entire test period. +35% means $100k grew to $135k. -28% means it shrank to $72k.</td></tr>
+<tr><td><b>CAGR</b></td><td style='color:#94a3b8;'>Compound Annual Growth Rate — your average yearly return. Like an interest rate that compounds. 10% CAGR means your money roughly doubles every 7 years.</td></tr>
+<tr><td><b>Annual Volatility</b></td><td style='color:#94a3b8;'>How wildly the portfolio swings day-to-day, measured per year. Low = smooth ride. High = stomach-churning ups and downs. The S&P 500 is typically ~15–20%.</td></tr>
+<tr><td><b>Sharpe Ratio</b></td><td style='color:#94a3b8;'>Return per unit of risk. Above 1.0 = good. Above 2.0 = excellent. Below 0 means you'd have been better off in a savings account. It's the single most commonly used measure of risk-adjusted performance.</td></tr>
+<tr><td><b>Sortino Ratio</b></td><td style='color:#94a3b8;'>Like the Sharpe Ratio, but only penalises downside swings (bad volatility). A strategy with big gains but few big losses scores better here than on Sharpe.</td></tr>
+<tr><td><b>Max Drawdown</b></td><td style='color:#94a3b8;'>The worst peak-to-trough loss you would have experienced. If it's -50%, your portfolio once fell by half before recovering. Think: could you sleep through that without panic-selling?</td></tr>
+<tr><td><b>Max Drawdown Duration</b></td><td style='color:#94a3b8;'>How many days the portfolio spent underwater — below its previous peak. A 2-year duration means you'd have waited 2 years just to get back to even.</td></tr>
+<tr><td><b>Win Rate</b></td><td style='color:#94a3b8;'>The percentage of trading days (or trades) that made money. 50% is a coin flip. Profitable systems can win with less than 50% if their winners are much bigger than their losers.</td></tr>
+<tr><td><b>Profit Factor</b></td><td style='color:#94a3b8;'>Total profits divided by total losses. 1.5 means for every $1 lost, $1.50 was made. Above 1.0 = profitable overall. Below 1.0 = losing money.</td></tr>
+<tr><td><b>VaR 95%</b></td><td style='color:#94a3b8;'>Value at Risk — on a typical bad day (the worst 5% of days), how much might you lose? A VaR of 1% means there's a 5% chance of losing more than 1% in a single day.</td></tr>
+<tr><td><b>Skewness</b></td><td style='color:#94a3b8;'>Whether bad days are worse than good days are good, or vice versa. Negative skew (common in trading) means rare but severe crashes. Positive skew means occasional big wins.</td></tr>
+<tr><td><b>Kurtosis</b></td><td style='color:#94a3b8;'>How often extreme moves happen. Higher kurtosis = more 'fat tails' — more frequent dramatic crashes or spikes than a normal distribution would predict.</td></tr>
+<tr><td><b>Kelly Fraction</b></td><td style='color:#94a3b8;'>A formula for how much of your capital to bet per trade for optimal growth. In practice, most traders use half-Kelly or less. A negative Kelly means don't bet at all — the edge is negative.</td></tr>
+<tr><td><b>Information Ratio</b></td><td style='color:#94a3b8;'>How consistently the strategy outperforms the benchmark. Higher = more reliably beating the market rather than just occasionally.</td></tr>
+
+  </tbody>
+</table>
+</div>
+<h2>📈 Technical Performance Summary</h2><table><thead><tr><th>Metric</th><th>mean_reversion</th><th>momentum</th><th>pairs_trading</th><th>stat_arb</th><th>multi_factor</th><th>trend_200</th><th>sector_rotation</th><th>breakout</th><th>IREN (B&H)</th><th>combined</th><th>Benchmark</th></tr></thead><tbody><tr><td><b>Total Return</b></td><td class="">0.00%</td><td class="negative">-4.80%</td><td class="positive">0.46%</td><td class="negative">-57.40%</td><td class="positive">35.19%</td><td class="positive">251.61%</td><td class="positive">349.55%</td><td class="positive">90.50%</td><td class="negative">-95.85%</td><td class="positive">34.34%</td><td class="positive">190.19%</td></tr><tr><td><b>CAGR</b></td><td class="">0.00%</td><td class="negative">-0.49%</td><td class="positive">0.05%</td><td class="negative">-8.19%</td><td class="positive">3.07%</td><td class="positive">13.43%</td><td class="positive">16.25%</td><td class="positive">6.67%</td><td class="negative">-64.14%</td><td class="positive">3.00%</td><td class="positive">11.27%</td></tr><tr><td><b>Annual Vol</b></td><td class="">0.00%</td><td class="">13.74%</td><td class="">3.69%</td><td class="">8.79%</td><td class="">13.04%</td><td class="">15.02%</td><td class="">19.26%</td><td class="">9.44%</td><td class="">121.79%</td><td class="">4.48%</td><td class="">17.68%</td></tr><tr><td><b>Sharpe Ratio</b></td><td class="">0.000</td><td class="">-0.332</td><td class="">-1.326</td><td class="">-1.498</td><td class="">-0.086</td><td class="positive">0.582</td><td class="positive">0.619</td><td class="positive">0.202</td><td class="">-0.279</td><td class="">-0.433</td><td class="positive">0.410</td></tr><tr><td><b>Sortino Ratio</b></td><td class="">-15.875</td><td class="">-0.400</td><td class="">-1.360</td><td class="">-1.449</td><td class="">-0.149</td><td class="">0.529</td><td class="">0.563</td><td class="">0.175</td><td class="">-0.630</td><td class="">-0.417</td><td class="">0.329</td></tr><tr><td><b>Calmar Ratio</b></td><td class="">0.000</td><td class="">-0.013</td><td class="">0.003</td><td class="">-0.139</td><td class="">0.124</td><td class="">0.454</td><td class="">0.622</td><td class="">0.379</td><td class="">-0.653</td><td class="">0.350</td><td class="">0.315</td></tr><tr><td><b>Max Drawdown</b></td><td class="">0.00%</td><td class="negative">-37.00%</td><td class="negative">-14.31%</td><td class="negative">-58.75%</td><td class="negative">-24.79%</td><td class="negative">-29.58%</td><td class="negative">-26.12%</td><td class="negative">-17.58%</td><td class="negative">-98.25%</td><td class="negative">-8.58%</td><td class="negative">-35.75%</td></tr><tr><td><b>VaR 95%</b></td><td class="">-0.0000%</td><td class="">1.1217%</td><td class="">0.3278%</td><td class="">0.9032%</td><td class="">1.2823%</td><td class="">1.5105%</td><td class="">1.8775%</td><td class="">0.8608%</td><td class="">11.0848%</td><td class="">0.4534%</td><td class="">1.6920%</td></tr><tr><td><b>CVaR 95%</b></td><td class="">-0.0000%</td><td class="">1.9739%</td><td class="">0.5455%</td><td class="">1.3129%</td><td class="">1.9924%</td><td class="">2.4579%</td><td class="">2.9347%</td><td class="">1.5654%</td><td class="">14.6310%</td><td class="">0.6896%</td><td class="">2.7687%</td></tr><tr><td><b>Win Rate</b></td><td class="">0.00%</td><td class="">50.97%</td><td class="">45.92%</td><td class="">46.72%</td><td class="">47.75%</td><td class="">51.05%</td><td class="">52.88%</td><td class="">46.96%</td><td class="">45.65%</td><td class="">52.72%</td><td class="">54.59%</td></tr><tr><td><b>Profit Factor</b></td><td class="">inf</td><td class="">1.01</td><td class="">1.01</td><td class="">0.85</td><td class="">1.06</td><td class="">1.19</td><td class="">1.18</td><td class="">1.16</td><td class="">0.96</td><td class="">1.13</td><td class="">1.14</td></tr><tr><td><b>Kelly f*</b></td><td class="">0.000</td><td class="">0.237</td><td class="">0.836</td><td class="">-5.000</td><td class="">2.277</td><td class="">5.000</td><td class="">4.563</td><td class="">5.000</td><td class="">-0.196</td><td class="">5.000</td><td class="">3.919</td></tr><tr><td><b>Skewness</b></td><td class="">nan</td><td class="">0.923</td><td class="">-0.751</td><td class="">-0.200</td><td class="">-0.421</td><td class="">-1.073</td><td class="">-0.508</td><td class="">-1.072</td><td class="">0.597</td><td class="">-0.584</td><td class="">-0.800</td></tr><tr><td><b>Kurtosis</b></td><td class="">nan</td><td class="">42.930</td><td class="">13.709</td><td class="">3.420</td><td class="">12.931</td><td class="">7.198</td><td class="">8.630</td><td class="">9.316</td><td class="">4.281</td><td class="">4.832</td><td class="">13.634</td></tr></tbody></table><h2>Dashboard</h2><img src="dashboard.png" alt="Dashboard"><h2>Monthly Returns — mean_reversion</h2><img src="monthly_mean_reversion.png"><h2>Monthly Returns — momentum</h2><img src="monthly_momentum.png"><h2>Monthly Returns — pairs_trading</h2><img src="monthly_pairs_trading.png"><h2>Monthly Returns — stat_arb</h2><img src="monthly_stat_arb.png"><h2>Monthly Returns — multi_factor</h2><img src="monthly_multi_factor.png"><h2>Monthly Returns — trend_200</h2><img src="monthly_trend_200.png"><h2>Monthly Returns — sector_rotation</h2><img src="monthly_sector_rotation.png"><h2>Monthly Returns — breakout</h2><img src="monthly_breakout.png"><h2>Monthly Returns — IREN (B&H)</h2><img src="monthly_IREN_(B&H).png"><h2>Monthly Returns — combined</h2><img src="monthly_combined.png"><p style='color:#475569;margin-top:40px;'>Generated by Quant Alpha Engine • For educational/research purposes only</p></body></html>
