@@ -354,6 +354,40 @@ def _build_explainer_section(reports: Dict[str, RiskReport]) -> str:
                 "after 20 trading days (harvest the gain)."
             ),
         },
+        "low_volatility": {
+            "emoji": "📉",
+            "title": "Low Volatility Anomaly",
+            "plain": (
+                "One of the most famous anomalies in finance: boring, low-volatility "
+                "stocks have historically delivered better risk-adjusted returns than "
+                "exciting, high-volatility ones. This strategy ranks all stocks by how "
+                "wildly they swing, then buys the calmest 20% and shorts the wildest 20%. "
+                "Traded by AQR, Robeco, and behind MSCI Min-Vol indices."
+            ),
+        },
+        "overnight_drift": {
+            "emoji": "🌙",
+            "title": "Overnight Drift",
+            "plain": (
+                "Stocks earn most of their long-run returns overnight — between market "
+                "close and the next morning's open. This strategy ranks stocks by how "
+                "consistently they drift upward overnight, then goes long the best "
+                "overnight performers and shorts the worst. The signal was documented "
+                "by academic researchers and is used as a factor at firms like Two Sigma."
+            ),
+        },
+        "adaptive_momentum": {
+            "emoji": "🎯",
+            "title": "Adaptive Momentum",
+            "plain": (
+                "Instead of picking one lookback window for momentum, this strategy "
+                "blends three horizons — short (1 month), medium (3 months), and long "
+                "(6 months) — and automatically puts more weight on whichever horizon "
+                "has been most predictive recently. Positions are sized by volatility "
+                "so each stock contributes equal risk. Inspired by Man AHL, Winton, "
+                "and other systematic trend-following hedge funds."
+            ),
+        },
     }
 
     # ── Dynamic plain-English results commentary ──────────────────────────────
