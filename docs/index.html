@@ -98,6 +98,64 @@
     .card-tag.green { background: #1a2d22; color: #3fb950; }
     .card-tag.yellow { background: #2d2a1a; color: #d29922; }
 
+    /* ── Strategy tiles (non-clickable) ──── */
+    .strategy-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 700px) {
+      .strategy-grid { grid-template-columns: 1fr; }
+    }
+    .strategy-tile {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-left: 3px solid #30363d;
+      border-radius: 8px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .strategy-tile.positive { border-left-color: #238636; }
+    .strategy-tile.negative { border-left-color: #6e4024; }
+    .strategy-tile .tile-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      line-height: 1;
+      opacity: 0.8;
+    }
+    .strategy-tile .tile-body { flex: 1; }
+    .strategy-tile .tile-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #c9d1d9;
+      margin-bottom: 2px;
+    }
+    .strategy-tile .tile-return {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .strategy-tile .tile-return.up { color: #3fb950; }
+    .strategy-tile .tile-return.down { color: #f85149; }
+    .strategy-tile .tile-desc {
+      font-size: 0.8rem;
+      color: #6e7681;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+    .strategy-tile .tile-tag {
+      display: inline-block;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1px 8px;
+      font-size: 0.68rem;
+      color: #8b949e;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
     /* ── Stats strip ─────────────────────── */
     .stats-strip {
       display: flex;
@@ -210,78 +268,68 @@
 
   <!-- ── Strategy summary ────────────────────────── -->
   <div class="section-heading">Strategies at a glance</div>
-  <div class="cards">
+  <div class="strategy-grid">
 
-    <div class="card" style="cursor:default;">
-      <div class="card-icon">🔄</div>
-      <div class="card-body">
-        <div class="card-title">Sector Rotation  <span style="color:#3fb950;font-size:.9em">+349%</span></div>
-        <div class="card-desc">Every month, rank all 5 sectors by their 3-month return and rotate
-        into the top 2. Simple momentum rule — ride winners, ditch losers.</div>
-        <span class="card-tag green">Best performer</span>
+    <div class="strategy-tile positive">
+      <div class="tile-icon">🔄</div>
+      <div class="tile-body">
+        <div class="tile-name">Sector Rotation <span class="tile-return up">+349%</span></div>
+        <div class="tile-desc">Rank 5 sectors by 3-month return, rotate into the top 2. Ride winners, ditch losers.</div>
+        <span class="tile-tag">Best performer</span>
       </div>
     </div>
 
-    <div class="card" style="cursor:default;">
-      <div class="card-icon">📈</div>
-      <div class="card-body">
-        <div class="card-title">200-Day MA Trend Filter  <span style="color:#3fb950;font-size:.9em">+252%</span></div>
-        <div class="card-desc">Hold any stock trading above its 200-day moving average.
-        Go to cash below. A classic long-only filter popularized by Mebane Faber (2007).</div>
-        <span class="card-tag green">Beat SPY</span>
+    <div class="strategy-tile positive">
+      <div class="tile-icon">📈</div>
+      <div class="tile-body">
+        <div class="tile-name">200-Day MA Trend Filter <span class="tile-return up">+252%</span></div>
+        <div class="tile-desc">Hold stocks above 200-day SMA, cash below. Classic long-only filter (Faber 2007).</div>
+        <span class="tile-tag">Beat SPY</span>
       </div>
     </div>
 
-    <div class="card" style="cursor:default;">
-      <div class="card-icon">🚀</div>
-      <div class="card-body">
-        <div class="card-title">52-Week High Breakout  <span style="color:#3fb950;font-size:.9em">+91%</span></div>
-        <div class="card-desc">Buy when a stock hits a new 52-week high on above-average volume.
-        Exit after 20 days or if price drops 8% from entry (stop-loss).</div>
-        <span class="card-tag">Long-only</span>
+    <div class="strategy-tile positive">
+      <div class="tile-icon">🚀</div>
+      <div class="tile-body">
+        <div class="tile-name">52-Week High Breakout <span class="tile-return up">+91%</span></div>
+        <div class="tile-desc">Buy at new 52-week highs on volume. 8% stop-loss or 20-day exit.</div>
+        <span class="tile-tag">Long-only</span>
       </div>
     </div>
 
-    <div class="card" style="cursor:default;">
-      <div class="card-icon">⚖️</div>
-      <div class="card-body">
-        <div class="card-title">Multi-Factor Model  <span style="color:#3fb950;font-size:.9em">+35%</span></div>
-        <div class="card-desc">Long/short portfolio scored on momentum, value, quality and low volatility —
-        a simplified version of Fama-French factor investing.</div>
-        <span class="card-tag">Long/Short</span>
+    <div class="strategy-tile positive">
+      <div class="tile-icon">⚖️</div>
+      <div class="tile-body">
+        <div class="tile-name">Multi-Factor Model <span class="tile-return up">+35%</span></div>
+        <div class="tile-desc">Momentum + value + quality + low vol scoring. Fama-French inspired long/short.</div>
+        <span class="tile-tag">Long/Short</span>
       </div>
     </div>
 
-    <div class="card" style="cursor:default;">
-      <div class="card-icon">🎯</div>
-      <div class="card-body">
-        <div class="card-title">Adaptive Momentum  <span style="color:#3fb950;font-size:.9em">+23%</span></div>
-        <div class="card-desc">Blends short (21d), medium (63d), and long (126d) momentum signals,
-        weighting each by recent predictive accuracy. Vol-targeted positions.
-        Inspired by Man AHL and Winton trend-following research.</div>
-        <span class="card-tag green">Lowest Max DD (−14%)</span>
+    <div class="strategy-tile positive">
+      <div class="tile-icon">🎯</div>
+      <div class="tile-body">
+        <div class="tile-name">Adaptive Momentum <span class="tile-return up">+23%</span></div>
+        <div class="tile-desc">Multi-horizon (21/63/126d) blend weighted by recent accuracy. Man AHL/Winton style.</div>
+        <span class="tile-tag">Lowest Max DD (−14%)</span>
       </div>
     </div>
 
-    <div class="card" style="cursor:default;">
-      <div class="card-icon">📉</div>
-      <div class="card-body">
-        <div class="card-title">Low Volatility Anomaly  <span style="color:#8b949e;font-size:.9em">−52%</span></div>
-        <div class="card-desc">Long lowest-vol quintile, short highest-vol quintile with inverse-vol
-        weighting. Based on Baker, Bradley &amp; Wurgler (2011). Traded by AQR, Robeco,
-        and MSCI Min-Vol indices. Underperformed in this tech-heavy universe.</div>
-        <span class="card-tag">Long/Short</span>
+    <div class="strategy-tile negative">
+      <div class="tile-icon">📉</div>
+      <div class="tile-body">
+        <div class="tile-name">Low Volatility Anomaly <span class="tile-return down">−52%</span></div>
+        <div class="tile-desc">Long low-vol, short high-vol quintile. AQR/Robeco. Underperformed in tech-heavy universe.</div>
+        <span class="tile-tag">Long/Short</span>
       </div>
     </div>
 
-    <div class="card" style="cursor:default;">
-      <div class="card-icon">🌙</div>
-      <div class="card-body">
-        <div class="card-title">Overnight Drift  <span style="color:#8b949e;font-size:.9em">−33%</span></div>
-        <div class="card-desc">Exploits the overnight return anomaly — stocks earn disproportionate
-        returns between close and next-day open. Ranks by drift consistency.
-        Documented by Cliff, Cooper &amp; Gulen (2008). Signal used at Two Sigma.</div>
-        <span class="card-tag">Market-Neutral</span>
+    <div class="strategy-tile negative">
+      <div class="tile-icon">🌙</div>
+      <div class="tile-body">
+        <div class="tile-name">Overnight Drift <span class="tile-return down">−33%</span></div>
+        <div class="tile-desc">Overnight return anomaly ranked by drift consistency. Two Sigma style signal.</div>
+        <span class="tile-tag">Market-Neutral</span>
       </div>
     </div>
 
